@@ -12,9 +12,9 @@ global using Microsoft.IdentityModel.Tokens;
 global using System.IdentityModel.Tokens.Jwt;
 global using System.Security.Claims;
 global using System.Text;
-
-
-
+global using System.Net;
+global using System.Text.Json;
+global using API.Errors;
 
 
 global using API.Entities;
@@ -23,3 +23,4 @@ global using API.DTOs;
 global using API.Services;
 global using API.Interfaces;
 global using API.Extentions;
+global using API.Middleware;
