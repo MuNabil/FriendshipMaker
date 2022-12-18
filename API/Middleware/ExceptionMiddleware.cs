@@ -3,10 +3,15 @@ namespace API.Middleware;
 public class ExceptionMiddleware
 {
     private readonly RequestDelegate _next;
+    // To pass request to the next middleware 
+    //iff any middleware throw an exception 
+    //then the response will go back to this middleware to handle this exception.
 
     private readonly ILogger<ExceptionMiddleware> _logger;
+    // To log the exception detail into terminal.
 
     private readonly IHostEnvironment _env;
+    // To check whether environment we'r in to send the ex detail based on environment.
 
     public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger, IHostEnvironment env)
     {
