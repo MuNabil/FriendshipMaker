@@ -1,20 +1,25 @@
 namespace API.Controllers;
 
+[Authorize]
 public class UsersController : BaseApiController
 {
-    public ApplicationDbContext _dbContext { get; }
-    public UsersController(ApplicationDbContext dbContext)
+    private readonly IUserRepository _userRepository;
+    private readonly IMapper _mapper;
+    public UsersController(IUserRepository userRepository, IMapper mapper)
     {
-        _dbContext = dbContext;
+        _mapper = mapper;
+        _userRepository = userRepository;
     }
 
-    [AllowAnonymous]
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<ApplicationUser>>> GetAllUsers() =>
-         await _dbContext.Users.ToListAsync();
+    public async Task<ActionResult<IEnumerable<MemberDto>>> GetAllUsers()
+    {
+        return Ok(await _userRepository.GetMembersAsync());
+    }
 
-    [Authorize]
-    [HttpGet("{id}")]
-    public async Task<ActionResult<ApplicationUser>> GetUserById(int id) =>
-         await _dbContext.Users.FindAsync(id);
+    [HttpGet("{username}")]
+    public async Task<ActionResult<MemberDto>> GetUserById(string username)
+    {
+        return Ok(await _userRepository.GetMemberByNameAsync(username));
+    }
 }
