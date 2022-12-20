@@ -18,7 +18,7 @@ public class UsersController : BaseApiController
     }
 
     [HttpGet("{username}")]
-    public async Task<ActionResult<MemberDto>> GetUserById(string username)
+    public async Task<ActionResult<MemberDto>> GetUser(string username)
     {
         return Ok(await _userRepository.GetMemberByNameAsync(username));
     }
