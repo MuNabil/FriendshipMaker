@@ -22,4 +22,24 @@ public class UsersController : BaseApiController
     {
         return Ok(await _userRepository.GetMemberByNameAsync(username));
     }
+
+    [HttpPut]
+    public async Task<ActionResult> UpdateUser(UpdateMemberDto updateMemberDto)
+    {
+        var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var user = await _userRepository.GetUserByUsernameAsync(username);
+
+        // user.Introduction = updateMemberDto.Introduction;
+        // user.Interests = updateMemberDto.Interests;
+        // user.LookingFor = updateMemberDto.LookingFor;
+        // user.City = updateMemberDto.City;
+        // user.Country = updateMemberDto.Country;
+
+        _mapper.Map(updateMemberDto, user);
+
+        _userRepository.Update(user);
+        if (await _userRepository.SaveAllAsync()) return NoContent();
+
+        return BadRequest("Failed to update user.");
+    }
 }
