@@ -18,6 +18,10 @@ global using System.Text.Json;
 global using API.Errors;
 global using AutoMapper;
 global using AutoMapper.QueryableExtensions;
+global using CloudinaryDotNet.Actions;
+global using Microsoft.Extensions.Options;
+
+
 
 
 

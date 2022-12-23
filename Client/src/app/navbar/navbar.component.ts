@@ -11,8 +11,7 @@ import { AccountService } from '../_services/account.service';
 })
 export class NavbarComponent implements OnInit {
   model: any = {};
-  constructor(public accountService: AccountService, private router: Router,
-    private toastr: ToastrService) {
+  constructor(public accountService: AccountService, private router: Router) {
 
   }
 

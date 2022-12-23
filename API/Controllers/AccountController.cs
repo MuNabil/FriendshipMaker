@@ -33,7 +33,7 @@ public class AccountController : BaseApiController
     [HttpPost("login")]
     public async Task<ActionResult<UserDto>> Login(LoginDto loginDto)
     {
-        var user = await _dbContext.Users.SingleOrDefaultAsync(u => u.UserName.Equals(loginDto.UserName.ToLower()));
+        var user = await _dbContext.Users.Include(p => p.Photos).SingleOrDefaultAsync(u => u.UserName.Equals(loginDto.UserName.ToLower()));
 
         if (user is null) return Unauthorized("Invalid Information..!");
 
@@ -44,7 +44,9 @@ public class AccountController : BaseApiController
         for (int i = 0; i < computedHash.Length; i++)
             if (!computedHash[i].Equals(user.PasswordHash[i])) return Unauthorized("Invalid Information..!");
 
-        return new UserDto { UserName = user.UserName, Token = _tokenService.CreateToken(user) };
+        var mainPhotoUrl = user.Photos.FirstOrDefault(p => p.IsMain)?.Url;
+
+        return new UserDto { UserName = user.UserName, Token = _tokenService.CreateToken(user), PhotoUrl = mainPhotoUrl };
     }
 
     private async Task<bool> UserExists(string username) =>

@@ -20,8 +20,7 @@ export class AccountService {
     return this.http.post(this.baseUrl + 'register', model).pipe(
       map((response: User) => {
         if (response) {
-          localStorage.setItem('user', JSON.stringify(response));
-          this.currentUserSource.next(response);
+          this.SetCurrentUser(response);
         }
       })
     );
@@ -31,8 +30,7 @@ export class AccountService {
     return this.http.post(this.baseUrl + 'login', model).pipe(
       map((response: User) => {
         if (response) {
-          localStorage.setItem('user', JSON.stringify(response));
-          this.currentUserSource.next(response);
+          this.SetCurrentUser(response);
         }
       })
     );
@@ -43,6 +41,7 @@ export class AccountService {
   }
 
   SetCurrentUser(user: User) {
+    localStorage.setItem('user', JSON.stringify(user));
     this.currentUserSource.next(user);
   }
 }
