@@ -33,7 +33,7 @@
       dropdown
     >
       <img
-        src="{{ user.photoUrl }}"
+        src="{{ user.photoUrl || './assets/user.png' }}"
         alt="{{ user.userName }}"
         class="rounded-circle m-2"
         style="width: 50px; border: 2px solid #fff; display: inline"

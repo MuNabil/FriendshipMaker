@@ -10,5 +10,7 @@ public class AutoMapperProfiles : Profile
 
         CreateMap<Photo, PhotoDto>();
         CreateMap<UpdateMemberDto, ApplicationUser>();
+        CreateMap<RegisterDto, ApplicationUser>()
+        .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.UserName.ToLower()));
     }
 }

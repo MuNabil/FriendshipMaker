@@ -4,8 +4,10 @@ public class AccountController : BaseApiController
 {
     private readonly ApplicationDbContext _dbContext;
     private readonly ITokenService _tokenService;
-    public AccountController(ApplicationDbContext dbContext, ITokenService tokenService)
+    private readonly IMapper _mapper;
+    public AccountController(ApplicationDbContext dbContext, ITokenService tokenService, IMapper mapper)
     {
+        _mapper = mapper;
         _tokenService = tokenService;
         _dbContext = dbContext;
     }
@@ -15,19 +17,17 @@ public class AccountController : BaseApiController
     {
         if (await UserExists(registerDto.UserName)) return BadRequest("This user is already exists..!");
 
+        var user = _mapper.Map<ApplicationUser>(registerDto);
+
         using var hmac = new HMACSHA512();
 
-        var user = new ApplicationUser
-        {
-            UserName = registerDto.UserName.ToLower(),
-            PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDto.Password)),
-            PasswordSalt = hmac.Key
-        };
+        user.PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDto.Password));
+        user.PasswordSalt = hmac.Key;
 
         _dbContext.Users.Add(user);
         await _dbContext.SaveChangesAsync();
 
-        return new UserDto { UserName = user.UserName, Token = _tokenService.CreateToken(user) };
+        return new UserDto { UserName = user.UserName, Token = _tokenService.CreateToken(user), KnownAs = user.KnownAs };
     }
 
     [HttpPost("login")]
@@ -46,7 +46,13 @@ public class AccountController : BaseApiController
 
         var mainPhotoUrl = user.Photos.FirstOrDefault(p => p.IsMain)?.Url;
 
-        return new UserDto { UserName = user.UserName, Token = _tokenService.CreateToken(user), PhotoUrl = mainPhotoUrl };
+        return new UserDto
+        {
+            UserName = user.UserName,
+            Token = _tokenService.CreateToken(user),
+            PhotoUrl = mainPhotoUrl,
+            KnownAs = user.KnownAs
+        };
     }
 
     private async Task<bool> UserExists(string username) =>

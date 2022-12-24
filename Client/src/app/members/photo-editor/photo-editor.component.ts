@@ -22,7 +22,7 @@ export class PhotoEditorComponent implements OnInit {
   constructor(private accountService: AccountService, private memberService: MembersService) {
     this.accountService.currentUser$.pipe(take(1)).subscribe({
       next: user => {
-        if (user) this.user = user
+        if (user) this.user = user;
       }
     })
   }
@@ -51,8 +51,15 @@ export class PhotoEditorComponent implements OnInit {
     // when file is uploaded successfully
     this.uploader.onSuccessItem = (item, response, status, headers) => {
       if (response) {
-        const photo = JSON.parse(response);
+        const photo: Photo = JSON.parse(response);
         this.member?.photos.push(photo);
+        if (photo.isMain) {
+          // Update the localStorage
+          this.user.photoUrl = photo.url;
+          this.accountService.SetCurrentUser(this.user);
+          // Update the member that displaying in this component
+          this.member.photoUrl = photo.url;
+        }
       }
     }
   }
