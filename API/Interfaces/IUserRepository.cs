@@ -6,7 +6,7 @@ public interface IUserRepository
     Task<ApplicationUser> GetUserByUsernameAsync(string username);
     Task<MemberDto> GetMemberByNameAsync(string username);
     Task<IEnumerable<ApplicationUser>> GetUsersAsync();
-    Task<IEnumerable<MemberDto>> GetMembersAsync();
+    Task<PagedList<MemberDto>> GetMembersAsync(UserParams userParams);
     void Update(ApplicationUser user);
     Task<bool> SaveAllAsync();
 }

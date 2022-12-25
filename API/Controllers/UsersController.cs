@@ -14,9 +14,15 @@ public class UsersController : BaseApiController
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<MemberDto>>> GetAllUsers()
+    public async Task<ActionResult<IEnumerable<MemberDto>>> GetAllUsers([FromQuery] UserParams userParams)
     {
-        return Ok(await _userRepository.GetMembersAsync());
+        // users also will contains a pagination information as will as the users themselfs
+        var users = await _userRepository.GetMembersAsync(userParams);
+
+        // To add a pagination information to the response headers
+        Response.AddPaginationHeader(users.CurrentPage, users.PageSize, users.TotalCount, users.TotalPages);
+
+        return Ok(users);
     }
 
     [HttpGet("{username}", Name = "GetUser")]
@@ -92,21 +98,22 @@ public class UsersController : BaseApiController
     public async Task<ActionResult> DeletePhoto(int photoId)
     {
         var user = await _userRepository.GetUserByUsernameAsync(User.GetUsername());
-        if(user is null) return NotFound();
+        if (user is null) return NotFound();
 
         var photo = user.Photos.FirstOrDefault(p => p.Id == photoId);
         if (photo is null) return NotFound();
 
-        if(photo.IsMain) return BadRequest("You cann't remove your main photo");
+        if (photo.IsMain) return BadRequest("You cann't remove your main photo");
 
-        if(photo.PublicId is not null){
+        if (photo.PublicId is not null)
+        {
             var result = await _photoService.DeletePhotoAsync(photo.PublicId);
-            if(result.Error is not null) return BadRequest(result.Error.Message);
+            if (result.Error is not null) return BadRequest(result.Error.Message);
         }
 
         user.Photos.Remove(photo);
         if (await _userRepository.SaveAllAsync()) return Ok();
-        
+
         return BadRequest("Problem occured when deleting the photo");
     }
 }

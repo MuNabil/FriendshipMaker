@@ -18,9 +18,13 @@ public class UserRepository : IUserRepository
             .SingleOrDefaultAsync();
     }
 
-    public async Task<IEnumerable<MemberDto>> GetMembersAsync()
+    public async Task<PagedList<MemberDto>> GetMembersAsync(UserParams userParams)
     {
-        return await _dbContext.Users.ProjectTo<MemberDto>(_mapper.ConfigurationProvider).ToListAsync();
+        var query = _dbContext.Users.ProjectTo<MemberDto>(_mapper.ConfigurationProvider)
+                    .AsNoTracking(); // To turn off tracking of EF because we only will read here 'no adding, edit..'
+
+        // To execute the query and returning pageList of ( memberDto and other paging informations that in the pageList class as properities).
+        return await PagedList<MemberDto>.CreateAsync(query, userParams.PageNumber, userParams.PageSize);
     }
 
     public async Task<ApplicationUser> GetUserByIdAsync(int id)
