@@ -16,6 +16,17 @@ public class UsersController : BaseApiController
     [HttpGet]
     public async Task<ActionResult<IEnumerable<MemberDto>>> GetAllUsers([FromQuery] UserParams userParams)
     {
+        #region Filtering
+
+        var user = await _userRepository.GetUserByUsernameAsync(User.GetUsername());
+        userParams.CurrrentUserName = user.UserName;
+
+        // To display the oposite gender for the current user
+        if (string.IsNullOrEmpty(userParams.Gender))
+            userParams.Gender = userParams.Gender == "male" ? "female" : "male";
+
+        #endregion
+
         // users also will contains a pagination information as will as the users themselfs
         var users = await _userRepository.GetMembersAsync(userParams);
 

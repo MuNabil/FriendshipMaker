@@ -27,7 +27,13 @@ public class AccountController : BaseApiController
         _dbContext.Users.Add(user);
         await _dbContext.SaveChangesAsync();
 
-        return new UserDto { UserName = user.UserName, Token = _tokenService.CreateToken(user), KnownAs = user.KnownAs };
+        return new UserDto
+        {
+            UserName = user.UserName,
+            Token = _tokenService.CreateToken(user),
+            KnownAs = user.KnownAs,
+            Gender = user.Gender
+        };
     }
 
     [HttpPost("login")]
@@ -51,7 +57,8 @@ public class AccountController : BaseApiController
             UserName = user.UserName,
             Token = _tokenService.CreateToken(user),
             PhotoUrl = mainPhotoUrl,
-            KnownAs = user.KnownAs
+            KnownAs = user.KnownAs,
+            Gender = user.Gender
         };
     }
 

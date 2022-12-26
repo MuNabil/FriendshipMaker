@@ -1,3 +1,58 @@
+<!-- To add the filters options -->
+<div class="text-center mt-3">
+  <h2>Your matches - {{ pagination?.totalItems }} found</h2>
+</div>
+
+<div class="container mt-3" *ngIf="userParams">
+  <form
+    #form="ngForm"
+    class="form-inline mb-3"
+    (ngSubmit)="LoadMembers()"
+    autocomplete="off"
+  >
+    <div class="form-group mx-2">
+      <label class="col-form-label me-1">Age from: </label>
+      <input
+        type="number"
+        class="form-control ml-1"
+        style="width: 70px"
+        name="minAge"
+        [(ngModel)]="userParams.minAge"
+      />
+    </div>
+    <div class="form-group mx-2">
+      <label class="col-form-label me-1">Age to: </label>
+      <input
+        type="number"
+        class="form-control ms-1"
+        style="width: 70px"
+        name="maxAge"
+        [(ngModel)]="userParams.maxAge"
+      />
+    </div>
+
+    <div class="form-group px-2">
+      <label class="col-form-label me-1">Show: </label>
+      <select
+        name="gender"
+        style="width: 150px"
+        class="form-select ms-1"
+        [(ngModel)]="userParams.gender"
+      >
+        <option *ngFor="let gender of genderList" [value]="gender.value">
+          {{ gender.display }}
+        </option>
+      </select>
+    </div>
+
+    <button class="btn btn-primary ml-2" type="submit">Apply Filters</button>
+    <button (click)="ResetFilters()" class="btn btn-info mx-1">
+      Reset Filters
+    </button>
+  </form>
+</div>
+
+<!-- To disply all members each one in card -->
 <div class="row">
   <div class="col-2" *ngFor="let member of members">
     <app-member-card [member]="member"></app-member-card>

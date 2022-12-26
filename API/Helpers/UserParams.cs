@@ -3,6 +3,8 @@ namespace API.Helpers;
 // Class that contains the pagination parameters that we will receive  from the user.
 public class UserParams
 {
+    #region Pagination
+
     // max amount of items that we're ever going to return from a request
     private const int MaxPageSize = 50;
 
@@ -17,4 +19,22 @@ public class UserParams
     }
 
     public int PageNumber { get; set; } = 1;
+
+
+    #endregion
+
+
+    #region filtering
+
+    // Get current username to don't displa it in the list of users
+    public string CurrrentUserName { get; set; }
+
+    //Get the gender to filter by it
+    public string Gender { get; set; }
+
+    // Get the Age to filter like From MinAge To MaxAge
+    public int MinAge { get; set; } = 18;
+    public int MaxAge { get; set; } = 150;
+
+    #endregion
 }

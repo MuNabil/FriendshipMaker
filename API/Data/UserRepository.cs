@@ -20,7 +20,16 @@ public class UserRepository : IUserRepository
 
     public async Task<PagedList<MemberDto>> GetMembersAsync(UserParams userParams)
     {
-        var query = _dbContext.Users.ProjectTo<MemberDto>(_mapper.ConfigurationProvider)
+        // Get the Birth date of min and max age of users to filter by
+        // I can't use userParams.MinAge because it's an int and DateOfBirth that I wanna filter depend on is a DateTime
+        // So I must declaring a new variables for them
+        var minAge = DateTime.Today.AddYears(-userParams.MaxAge - 1);
+        var maxAge = DateTime.Today.AddYears(-userParams.MinAge);
+
+        var query = _dbContext.Users
+                    .Where(u => u.UserName != userParams.CurrrentUserName && u.Gender == userParams.Gender
+                    && u.DateOfBirth >= minAge && u.DateOfBirth <= maxAge) // filtering (note that you must make filtering before ProjectTo())
+                    .ProjectTo<MemberDto>(_mapper.ConfigurationProvider)
                     .AsNoTracking(); // To turn off tracking of EF because we only will read here 'no adding, edit..'
 
         // To execute the query and returning pageList of ( memberDto and other paging informations that in the pageList class as properities).
