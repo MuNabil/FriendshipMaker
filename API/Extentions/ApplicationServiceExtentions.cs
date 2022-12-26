@@ -12,6 +12,8 @@ public static class ApplicationServiceExtentions
 
         Services.AddScoped<IPhotoService, PhotoService>();
 
+        Services.AddScoped<LogUserActivity>();
+
 
         Services.AddAutoMapper(typeof(AutoMapperProfiles).Assembly);
 

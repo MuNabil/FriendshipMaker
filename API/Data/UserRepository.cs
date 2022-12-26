@@ -20,20 +20,37 @@ public class UserRepository : IUserRepository
 
     public async Task<PagedList<MemberDto>> GetMembersAsync(UserParams userParams)
     {
+
+        var query = _dbContext.Users.AsQueryable();
+
+        #region Filtering
+
         // Get the Birth date of min and max age of users to filter by
-        // I can't use userParams.MinAge because it's an int and DateOfBirth that I wanna filter depend on is a DateTime
-        // So I must declaring a new variables for them
         var minAge = DateTime.Today.AddYears(-userParams.MaxAge - 1);
         var maxAge = DateTime.Today.AddYears(-userParams.MinAge);
 
-        var query = _dbContext.Users
-                    .Where(u => u.UserName != userParams.CurrrentUserName && u.Gender == userParams.Gender
-                    && u.DateOfBirth >= minAge && u.DateOfBirth <= maxAge) // filtering (note that you must make filtering before ProjectTo())
-                    .ProjectTo<MemberDto>(_mapper.ConfigurationProvider)
-                    .AsNoTracking(); // To turn off tracking of EF because we only will read here 'no adding, edit..'
+        query = query.Where(u => u.UserName != userParams.CurrrentUserName && u.Gender == userParams.Gender
+                    && u.DateOfBirth >= minAge && u.DateOfBirth <= maxAge);
+
+        #endregion
+
+        #region Sorting
+
+        query = userParams.OrderBy switch // the new way to do the switch expression
+        {
+            "created" => query.OrderByDescending(u => u.Created), // equal to case "created":  ...
+            _ => query.OrderByDescending(u => u.LastActive)  // (_ => equal to the default case in switch statement)
+        };
+
+        #endregion
+
+
+        // I can't store the result in query variable cuz it's an ApplicationUser type now
+        var queryAsMemberDto = query.ProjectTo<MemberDto>(_mapper.ConfigurationProvider)
+                    .AsNoTracking();
 
         // To execute the query and returning pageList of ( memberDto and other paging informations that in the pageList class as properities).
-        return await PagedList<MemberDto>.CreateAsync(query, userParams.PageNumber, userParams.PageSize);
+        return await PagedList<MemberDto>.CreateAsync(queryAsMemberDto, userParams.PageNumber, userParams.PageSize);
     }
 
     public async Task<ApplicationUser> GetUserByIdAsync(int id)

@@ -8,6 +8,7 @@ export class UserParams {
     minAge = 18;
     maxAge = 80;
     gender: string;
+    orderBy = 'lastActive';
 
     // To also set the intial value for gender as well
     constructor(user: User) {

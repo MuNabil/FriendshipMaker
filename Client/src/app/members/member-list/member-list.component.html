@@ -49,6 +49,35 @@
     <button (click)="ResetFilters()" class="btn btn-info mx-1">
       Reset Filters
     </button>
+
+    <!-- ngx-bootstrap buttoms to perform sorting -->
+    <div class="col">
+      <div class="btn-group float-end">
+        <!-- button to sort by [last active] time when clecked -->
+        <button
+          type="button"
+          class="btn btn-primary"
+          name="orderBy"
+          [(ngModel)]="userParams.orderBy"
+          btnRadio="lastActive"
+          (click)="LoadMembers()"
+        >
+          Last Active
+        </button>
+        <!-- button to sort by [created date] when clecked -->
+        <button
+          type="button"
+          class="btn btn-primary"
+          name="orderBy"
+          [(ngModel)]="userParams.orderBy"
+          btnRadio="created"
+          (click)="LoadMembers()"
+        >
+          Newest members
+        </button>
+      </div>
+    </div>
+    <!-- End of sorting radio buttons -->
   </form>
 </div>
 

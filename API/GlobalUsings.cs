@@ -20,10 +20,8 @@ global using AutoMapper;
 global using AutoMapper.QueryableExtensions;
 global using CloudinaryDotNet.Actions;
 global using Microsoft.Extensions.Options;
-
-
-
-
+global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.AspNetCore.Mvc.Filters;
 
 
 global using API.Entities;
