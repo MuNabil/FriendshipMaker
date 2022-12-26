@@ -1,11 +1,13 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { of } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, take } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 import { Member } from '../_models/member';
 import { PaginatedResult } from '../_models/pagination';
+import { User } from '../_models/user';
 import { UserParams } from '../_models/userParams';
+import { AccountService } from './account.service';
 
 @Injectable({
   providedIn: 'root'
@@ -14,10 +16,42 @@ export class MembersService {
   baseUrl = environment.apiUrl + 'Users/';
   members: Member[] = [];
 
-  constructor(private http: HttpClient) {
+  // Map to make the cache -> the key will be the userParams that contains the request details and the value will be the response themselvs
+  memberCache = new Map();
+
+  // To keep these infrmation here to keep the pagination information.
+  user: User;
+  userParams: UserParams;
+
+  constructor(private http: HttpClient, private accountService: AccountService) {
+    // Note that: you can inject a service into service but you can't inject two services each one in the othe one because this will cause a circule refrences error.
+    this.accountService.currentUser$.pipe(take(1)).subscribe(user => {
+      this.user = user;
+      // To intiate the userParams and send the user to the ctor to set the age there.
+      this.userParams = new UserParams(user);
+    })
+  }
+
+  GetUserParams(): UserParams {
+    return this.userParams;
+  }
+
+  SetUserParams(userParams: UserParams) {
+    this.userParams = userParams;
+  }
+
+  ResetUserParams() {
+    this.userParams = new UserParams(this.user);
+    return this.userParams;
   }
 
   GetMembers(userParams: UserParams) {
+
+    // To check if this request is in the cache
+    let response = this.memberCache.get(Object.values(userParams).join('-'));
+    if (response) {
+      return of(response);
+    }
 
     // To send the pagination informations in the query string
     let params = this.GetPaginationHeaders(userParams.pageNumber, userParams.pageSize);
@@ -28,12 +62,33 @@ export class MembersService {
     params = params.append('gender', userParams.gender);
     params = params.append('orderBy', userParams.orderBy);
 
-    return this.GetPaginatedResult<Member[]>(this.baseUrl, params);
+    return this.GetPaginatedResult<Member[]>(this.baseUrl, params)
+      .pipe(
+        // To save the response in the cache then returning it.
+        map(response => {
+          // The key of the cache will be the userParams as a string seprated by '-'
+          this.memberCache.set(Object.values(userParams).join('-'), response);
+          return response;
+        })
+      );
   }
 
   GetMember(username: string) {
-    const member = this.members.find(x => x.username === username);
-    if (member) return of(member);
+    // To get only the values from the memberCache Map
+    const paginatedResultFromCache = [...this.memberCache.values()];
+
+    // the values is ((PaginatedResult { result: members, pagination: I DON'T WANT IT }));
+    const members = paginatedResultFromCache.reduce((arr, response) => arr.concat(response.result), []);
+
+    // To get the user with the wanted username
+    const member = members.find((member: Member) => member.username === username);
+
+    // To return it if he is in the cache
+    if (member) {
+      return of(member);
+    }
+
+    // If he is not in the cache request it from the server
     return this.http.get<Member>(this.baseUrl + username);
   }
 

@@ -32,12 +32,8 @@ export class MemberListComponent implements OnInit {
     { value: 'female', display: 'Females' }
   ];
 
-  constructor(private membersService: MembersService, private accountService: AccountService) {
-    this.accountService.currentUser$.pipe(take(1)).subscribe(user => {
-      this.user = user;
-      // To intiate the userParams and send the user to the ctor to set the age there.
-      this.userParams = new UserParams(user);
-    })
+  constructor(private membersService: MembersService) {
+    this.userParams = this.membersService.GetUserParams();
   }
 
   ngOnInit(): void {
@@ -45,6 +41,8 @@ export class MemberListComponent implements OnInit {
   }
 
   LoadMembers() {
+    // To always set the userParams before loading the members with filtering
+    this.membersService.SetUserParams(this.userParams);
     this.membersService.GetMembers(this.userParams).subscribe(response => {
       this.members = response.result;
       this.pagination = response.pagination;
@@ -56,6 +54,9 @@ export class MemberListComponent implements OnInit {
     // To see what page the user click on it
     this.userParams.pageNumber = event.page;
 
+    // To set the userParams to with the new values 
+    this.membersService.SetUserParams(this.userParams);
+
     // Load the new members for the page the user clicked
     this.LoadMembers();
   }
@@ -63,8 +64,8 @@ export class MemberListComponent implements OnInit {
   // To reset the filters
   ResetFilters() {
     // To reset the params
-    this.userParams = new UserParams(this.user);
-    // send the params again to the api and get the new response
+    this.userParams = this.membersService.ResetUserParams();
+    // send the params again to the service and get the new members
     this.LoadMembers();
   }
 
