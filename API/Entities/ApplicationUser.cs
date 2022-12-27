@@ -17,4 +17,14 @@ public class ApplicationUser
     public string City { get; set; }
     public string Country { get; set; }
     public ICollection<Photo> Photos { get; set; }
+
+    #region To add the like functionality
+
+    // the list of followers to this user
+    public ICollection<UserLike> LikedByUsers { get; set; }
+
+    // The list of users that this user following
+    public ICollection<UserLike> LikedUsers { get; set; }
+
+    #endregion
 }

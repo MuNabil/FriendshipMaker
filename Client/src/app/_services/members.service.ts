@@ -13,7 +13,7 @@ import { AccountService } from './account.service';
   providedIn: 'root'
 })
 export class MembersService {
-  baseUrl = environment.apiUrl + 'Users/';
+  baseUrl = environment.apiUrl;
   members: Member[] = [];
 
   // Map to make the cache -> the key will be the userParams that contains the request details and the value will be the response themselvs
@@ -62,7 +62,7 @@ export class MembersService {
     params = params.append('gender', userParams.gender);
     params = params.append('orderBy', userParams.orderBy);
 
-    return this.GetPaginatedResult<Member[]>(this.baseUrl, params)
+    return this.GetPaginatedResult<Member[]>(this.baseUrl + 'Users/', params)
       .pipe(
         // To save the response in the cache then returning it.
         map(response => {
@@ -89,11 +89,11 @@ export class MembersService {
     }
 
     // If he is not in the cache request it from the server
-    return this.http.get<Member>(this.baseUrl + username);
+    return this.http.get<Member>(this.baseUrl + 'Users/' + username);
   }
 
   UpdateMember(member: Member) {
-    return this.http.put(this.baseUrl, member).pipe(
+    return this.http.put(this.baseUrl + 'Users/', member).pipe(
       map(() => {
         const memberIndex = this.members.indexOf(member);
         this.members[memberIndex] = member;
@@ -102,11 +102,20 @@ export class MembersService {
   }
 
   SetMainPhoto(photoId: number) {
-    return this.http.put(`${this.baseUrl}set-main-photo/${photoId}`, {});
+    return this.http.put(`${this.baseUrl}Users/set-main-photo/${photoId}`, {});
   }
 
   DeletePhoto(photoId: number) {
-    return this.http.delete(`${this.baseUrl}delete-photo/${photoId}`);
+    return this.http.delete(`${this.baseUrl}Users/delete-photo/${photoId}`);
+  }
+
+  //Deal with like feature
+  AddLike(username: string) {
+    return this.http.post(this.baseUrl + 'Likes/' + username, {});
+  }
+
+  GetLikes(predicate: string) {
+    return this.http.get<Partial<Member[]>>(`${this.baseUrl}Likes?predicate=${predicate}`);
   }
 
   private GetPaginatedResult<T>(url: string, params: HttpParams) {

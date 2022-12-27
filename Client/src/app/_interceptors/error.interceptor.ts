@@ -29,8 +29,11 @@ export class ErrorInterceptor implements HttpInterceptor {
               }
               throw modalStateErrors.flat();
             }
-            else {
+            else if (typeof (error.error) === "object") { // If the response is empty BadRequest();
               this.toastr.error(error.statusText, error.status);
+            }
+            else { // If the response is not empty has a message BadRequest("......");
+              this.toastr.error(error.error, error.status);
             }
             break;
           case 401:

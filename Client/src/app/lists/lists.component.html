@@ -1,1 +1,30 @@
-<p>lists works!</p>
+<h2>{{ predicate === "likes" ? "Members I like" : "Members who like me" }}</h2>
+
+<!-- Using ngx-bootsrap radio button to swap between followers and followings -->
+<div class="container mt-3">
+  <div class="d-flex">
+    <div class="btn-group" name="predicate">
+      <div
+        class="btn btn-primary"
+        btnRadio="liked"
+        [(ngModel)]="predicate"
+        (click)="LoadLikes()"
+      >
+        Member I like
+      </div>
+      <div
+        class="btn btn-primary"
+        btnRadio="likedBy"
+        [(ngModel)]="predicate"
+        (click)="LoadLikes()"
+      >
+        Member who likes me
+      </div>
+    </div>
+  </div>
+  <div class="row mt-3">
+    <div class="col-2" *ngFor="let member of members">
+      <app-member-card [member]="member"></app-member-card>
+    </div>
+  </div>
+</div>
