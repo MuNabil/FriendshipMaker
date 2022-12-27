@@ -39,10 +39,19 @@ public class LikesController : BaseApiController
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<LikeDto>>> GetLikedUsers(string predicate)
+    public async Task<ActionResult<IEnumerable<LikeDto>>> GetLikedUsers([FromQuery] LikesParams likesParams)
     {
-        var likedUsers = await _likesRepository.GetUserLikesAsync(predicate, User.GetUserId());
-        return Ok(likedUsers);
+        // To set the userId in likesParams object
+        likesParams.UserId = User.GetUserId();
+
+        // this will return the members as well as the pagination information
+        var users = await _likesRepository.GetUserLikesAsync(likesParams);
+
+        // To send the pagination information in the response header to the client
+        Response.AddPaginationHeader(users.CurrentPage, users.PageSize, users.TotalCount, users.TotalPages);
+
+        // then send the members in the body of the response
+        return Ok(users);
     }
 
 }

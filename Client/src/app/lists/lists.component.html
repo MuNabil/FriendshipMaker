@@ -1,7 +1,6 @@
 <h2>{{ predicate === "likes" ? "Members I like" : "Members who like me" }}</h2>
-
-<!-- Using ngx-bootsrap radio button to swap between followers and followings -->
 <div class="container mt-3">
+  <!-- Using ngx-bootsrap radio button to swap between followers and followings -->
   <div class="d-flex">
     <div class="btn-group" name="predicate">
       <div
@@ -22,9 +21,27 @@
       </div>
     </div>
   </div>
+
   <div class="row mt-3">
     <div class="col-2" *ngFor="let member of members">
       <app-member-card [member]="member"></app-member-card>
     </div>
   </div>
+</div>
+
+<!-- To display the paginations tabs -->
+<div class="d-flex justify-content-center" *ngIf="pagination">
+  <pagination
+    [boundaryLinks]="true"
+    [totalItems]="pagination.totalItems"
+    [itemsPerPage]="pagination.itemsPerPage"
+    [(ngModel)]="pagination.currentPage"
+    (pageChanged)="PageChanged($event)"
+    previousText="&lsaquo;"
+    nextText="&rsaquo;"
+    firstText="&laquo;"
+    lastText="&raquo;"
+  >
+     
+  </pagination>
 </div>

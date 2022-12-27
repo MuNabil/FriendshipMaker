@@ -9,6 +9,6 @@ public interface ILikesRepository
     Task<ApplicationUser> GetUserWithLikesAsync(int userId);
 
     // To get the user followers/likedHim or following/heLike depend on the pridicate that will send
-    Task<IEnumerable<LikeDto>> GetUserLikesAsync(string pridicate, int userId);
+    Task<PagedList<LikeDto>> GetUserLikesAsync(LikesParams likesParams);
 
 }

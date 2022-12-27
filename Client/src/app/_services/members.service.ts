@@ -114,12 +114,18 @@ export class MembersService {
     return this.http.post(this.baseUrl + 'Likes/' + username, {});
   }
 
-  GetLikes(predicate: string) {
-    return this.http.get<Partial<Member[]>>(`${this.baseUrl}Likes?predicate=${predicate}`);
+  GetLikes(predicate: string, pageNumber: number, pageSize: number) {
+
+    // To add the parameters to params to send it as a query string
+    let params = this.GetPaginationHeaders(pageNumber, pageSize);
+    params = params.append('predicate', predicate);
+
+    // To call the API and take the response
+    return this.GetPaginatedResult<Partial<Member[]>>(this.baseUrl + 'Likes', params);
   }
 
   private GetPaginatedResult<T>(url: string, params: HttpParams) {
-    // To contain the response body (membr[]) and the response header (pagination information)
+    // To contain the response body and the response header { result(bode): (membr[]) , pagination(header): pagination information}
     const paginatedResult: PaginatedResult<T> = new PaginatedResult<T>();
 
     // Using this observe syntax to get the all 'response' not just the body

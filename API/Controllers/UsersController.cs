@@ -33,6 +33,7 @@ public class UsersController : BaseApiController
         // To add a pagination information to the response headers
         Response.AddPaginationHeader(users.CurrentPage, users.PageSize, users.TotalCount, users.TotalPages);
 
+        // and send the users in the response body
         return Ok(users);
     }
 

@@ -1,6 +1,5 @@
 namespace API.Helpers;
 
-
 public class PagedList<T> : List<T>
 {
     public PagedList(IEnumerable<T> items, int count, int pageNumber, int pageSize)
@@ -19,7 +18,7 @@ public class PagedList<T> : List<T>
     public int PageSize { get; set; }
     public int TotalCount { get; set; }
 
-    // Static method to create a new instance of this class
+    // Static method to apply the pagination and return a new instance of this class
     public static async Task<PagedList<T>> CreateAsync(IQueryable<T> source, int pageNumber, int pageSize)
     {
         // number of All items for this query in db

@@ -14,33 +14,33 @@ public class LikesRepository : ILikesRepository
         return await _dbContext.Likes.FindAsync(SourceUserId, LikedUserId);
     }
 
-    public async Task<IEnumerable<LikeDto>> GetUserLikesAsync(string predicate, int userId)
+    public async Task<PagedList<LikeDto>> GetUserLikesAsync(LikesParams likesParams)
     {
         // The only reason I get the users because If the pridicate is null or invalid, it will return all the users
         var users = _dbContext.Users.OrderBy(u => u.UserName).AsQueryable();
         var likes = _dbContext.Likes.AsQueryable();
 
-        if (predicate == "liked")
+        if (likesParams.Predicate == "liked")
         { // liked = following
 
             // SourceUser that following the other user
-            likes = likes.Where(like => like.SourceUserId == userId);
+            likes = likes.Where(like => like.SourceUserId == likesParams.UserId);
 
             // Get his followings users
             users = likes.Select(like => like.LikedUser);
         }
 
-        if (predicate == "likedBy")
+        if (likesParams.Predicate == "likedBy")
         { // likedBy = follower
 
             // LikedUser is the user that is the SourceUser following then the SourceUser is the followers to the LikedUser
-            likes = likes.Where(like => like.LikedUserId == userId);
+            likes = likes.Where(like => like.LikedUserId == likesParams.UserId);
 
             //Get his followers
             users = likes.Select(like => like.SourceUser);
         }
 
-        return await users.Select(user => new LikeDto
+        var likedUsers = users.Select(user => new LikeDto
         {  // To do mapping
             Id = user.Id,
             Username = user.UserName,
@@ -48,7 +48,9 @@ public class LikesRepository : ILikesRepository
             PhotoUrl = user.Photos.FirstOrDefault(p => p.IsMain).Url,
             Age = user.DateOfBirth.CalculateAge(),
             City = user.City
-        }).ToListAsync();
+        });
+
+        return await PagedList<LikeDto>.CreateAsync(likedUsers, likesParams.PageNumber, likesParams.PageSize);
     }
 
     public async Task<ApplicationUser> GetUserWithLikesAsync(int userId)
