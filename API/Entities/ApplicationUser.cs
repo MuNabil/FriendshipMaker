@@ -27,4 +27,14 @@ public class ApplicationUser
     public ICollection<UserLike> LikedUsers { get; set; }
 
     #endregion
+
+    #region Messaging relationship
+
+    // the list of followers to this user
+    public ICollection<Message> MessagesSent { get; set; }
+
+    // The list of users that this user following
+    public ICollection<Message> MessagesReceived { get; set; }
+
+    #endregion
 }

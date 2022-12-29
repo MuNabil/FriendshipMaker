@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace API.Helpers;
 
-// This class will contain the informations that we wanna send it back to the client
+// This class will contain the Pagination informations that we wanna send it back to the client
 public class PaginationHeader
 {
     public PaginationHeader(int currentPage, int itemsPerPage, int totalItems, int totalPages)

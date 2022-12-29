@@ -1,8 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { NgxGalleryAnimation, NgxGalleryImage, NgxGalleryOptions } from '@kolkov/ngx-gallery';
+import { TabDirective, TabsetComponent } from 'ngx-bootstrap/tabs';
 import { Member } from 'src/app/_models/member';
+import { Message } from 'src/app/_models/message';
 import { MembersService } from 'src/app/_services/members.service';
+import { MessagesService } from 'src/app/_services/messages.service';
 
 @Component({
   selector: 'app-member-detail',
@@ -13,10 +16,23 @@ export class MemberDetailComponent implements OnInit {
   member: Member;
   galleryOptions: NgxGalleryOptions[];
   galleryImages: NgxGalleryImage[];
-  constructor(private memberService: MembersService, private route: ActivatedRoute) { }
+
+  // For Messages
+  @ViewChild('memberTabs', { static: true }) memberTabs: TabsetComponent;
+  activeTab: TabDirective;
+  messages: Message[] = [];
+
+  constructor(private memberService: MembersService, private route: ActivatedRoute, private messageService: MessagesService) { }
 
   ngOnInit(): void {
-    this.LoadMember();
+    this.route.data.subscribe(data => {
+      this.member = data.member;
+    })
+
+    // To get the queryParams that sended with the routerLink in [queryParams]='{tab: 3}'
+    this.route.queryParams.subscribe(params => {
+      params.tab ? this.SelectTab(params.tab) : this.SelectTab(0);
+    });
 
     this.galleryOptions = [
       {
@@ -28,15 +44,8 @@ export class MemberDetailComponent implements OnInit {
         preview: false
       }
     ];
-  }
 
-  LoadMember() {
-    let username: string = this.route.snapshot.paramMap.get('username');
-    this.memberService.GetMember(username)
-      .subscribe(res => {
-        this.member = res;
-        this.galleryImages = this.GetPhotos();
-      });
+    this.galleryImages = this.GetPhotos();
   }
 
   GetPhotos() {
@@ -51,6 +60,24 @@ export class MemberDetailComponent implements OnInit {
       );
     }
     return imgUrls;
+  }
+
+  onTabActivated(data: TabDirective) {
+    this.activeTab = data;
+    if (this.activeTab.heading === 'Messages' && this.messages.length === 0) {
+      this.LoadMessages();
+    }
+  }
+
+  LoadMessages() {
+    this.messageService.GetMessageThread(this.member.username).subscribe(messages => {
+      this.messages = messages;
+    })
+  }
+
+  // To route the user to the any tab directlly
+  SelectTab(tabId: number) {
+    this.memberTabs.tabs[tabId].active = true;
   }
 
 }

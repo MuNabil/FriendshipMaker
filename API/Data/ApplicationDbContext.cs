@@ -7,10 +7,13 @@ namespace API.Data
         }
         public DbSet<ApplicationUser> Users { get; set; }
         public DbSet<UserLike> Likes { get; set; }
+        public DbSet<Message> Messages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            #region Like relationship
 
             // Add the PK for Likes table as a (composite key)
             builder.Entity<UserLike>()
@@ -29,6 +32,22 @@ namespace API.Data
               .WithMany(appUser => appUser.LikedByUsers)
               .HasForeignKey(userLike => userLike.LikedUserId)
               .OnDelete(DeleteBehavior.Cascade);
+
+            #endregion
+
+            #region Message relationship
+
+            builder.Entity<Message>()
+              .HasOne(message => message.Sender)
+              .WithMany(user => user.MessagesSent)
+              .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Message>()
+              .HasOne(message => message.Recipient)
+              .WithMany(user => user.MessagesReceived)
+              .OnDelete(DeleteBehavior.Restrict);
+
+            #endregion
         }
     }
 }
