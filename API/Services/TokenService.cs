@@ -3,11 +3,13 @@ namespace API.Services;
 public class TokenService : ITokenService
 {
     private readonly SymmetricSecurityKey _key;
-    public TokenService(IConfiguration configuration)
+    private readonly UserManager<ApplicationUser> _userManager;
+    public TokenService(IConfiguration configuration, UserManager<ApplicationUser> userManager)
     {
+        _userManager = userManager;
         _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["tokenKey"]));
     }
-    public string CreateToken(ApplicationUser user)
+    public async Task<string> CreateToken(ApplicationUser user)
     {
         var claims = new List<Claim>
         {
@@ -15,7 +17,12 @@ public class TokenService : ITokenService
             new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName)
         };
 
+        // To send the roles of this user with the claim in token
+        var userRoles = await _userManager.GetRolesAsync(user);
+        claims.AddRange(userRoles.Select(role => new Claim(ClaimTypes.Role, role)));
+
         var creds = new SigningCredentials(_key, SecurityAlgorithms.HmacSha512Signature);
+
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(claims),

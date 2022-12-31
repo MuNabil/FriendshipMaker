@@ -22,6 +22,9 @@ global using CloudinaryDotNet.Actions;
 global using Microsoft.Extensions.Options;
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.AspNetCore.Mvc.Filters;
+global using Microsoft.AspNetCore.Identity;
+global using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+
 
 
 global using API.Entities;

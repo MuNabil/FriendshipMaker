@@ -27,19 +27,28 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+#region Add all migrations & Seed data
+
 var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
 
 try
 {
     var dbContext = services.GetRequiredService<ApplicationDbContext>();
+    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+    var roleManager = services.GetRequiredService<RoleManager<ApplicationRole>>();
+    // To always update database with all migrations in Migrations folder
     await dbContext.Database.MigrateAsync();
-    await Seed.SeedUsers(dbContext);
+
+    // you can not seed the data before creating the database So it's must become after Databasr.MigrateAsync();
+    await Seed.SeedUsers(userManager, roleManager);
 }
 catch (Exception ex)
 {
     var logger = services.GetRequiredService<ILogger<Program>>();
     logger.LogError(ex, "Error occurred during migration");
 }
+
+#endregion
 
 await app.RunAsync();

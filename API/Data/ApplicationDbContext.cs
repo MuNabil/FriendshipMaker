@@ -1,17 +1,32 @@
 namespace API.Data
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, int,
+     IdentityUserClaim<int>, ApplicationUserRole, IdentityUserLogin<int>, IdentityRoleClaim<int>, IdentityUserToken<int>>
     {
         public ApplicationDbContext(DbContextOptions options) : base(options)
         {
         }
-        public DbSet<ApplicationUser> Users { get; set; }
         public DbSet<UserLike> Likes { get; set; }
         public DbSet<Message> Messages { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            #region M-N relationship between Users and Roles
+
+            builder.Entity<ApplicationUser>()
+              .HasMany(appUser => appUser.UserRoles)
+              .WithOne(userRole => userRole.User)
+              .HasForeignKey(appUser => appUser.UserId)
+              .IsRequired();
+
+            builder.Entity<ApplicationRole>()
+              .HasMany(appRole => appRole.UserRoles)
+              .WithOne(userRole => userRole.Role)
+              .HasForeignKey(appRole => appRole.RoleId)
+              .IsRequired();
+            #endregion
 
             #region Like relationship
 

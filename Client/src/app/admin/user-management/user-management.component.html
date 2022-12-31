@@ -1,0 +1,26 @@
+<div class="table-responsive">
+  <table class="table table-default table-hover">
+    <thead>
+      <tr>
+        <th scope="col">Username</th>
+        <th scope="col">Actine roles</th>
+        <th scope="col"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let user of users">
+        <td>{{ user.username }}</td>
+        <td>{{ user.roles }}</td>
+        <td>
+          <button
+            type="button"
+            (click)="OpenModalWithComponent(user)"
+            class="btn btn-info"
+          >
+            Edit roles
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

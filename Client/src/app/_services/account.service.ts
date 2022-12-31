@@ -41,7 +41,19 @@ export class AccountService {
   }
 
   SetCurrentUser(user: User) {
+    user.roles = [];
+    //To get only the roles from the payload(Data)
+    const roles = this.GetDecodedToken(user.token).role;
+    // When user has one role it will be a string not array
+    // So I need to convert it into array anyway
+    Array.isArray(roles) ? user.roles = roles : user.roles.push(roles);
+
     localStorage.setItem('user', JSON.stringify(user));
     this.currentUserSource.next(user);
+  }
+
+  GetDecodedToken(token: string) {
+    // atob method allow to decode the token  then [1] to take the payload(Data)
+    return JSON.parse(atob(token.split('.')[1]));
   }
 }
