@@ -18,6 +18,8 @@ public static class ApplicationServiceExtentions
 
         Services.AddScoped<LogUserActivity>();
 
+        // Because I need this service to be shared amongs every single connection that comes into the server
+        Services.AddSingleton<PresenceTracker>();
 
         Services.AddAutoMapper(typeof(AutoMapperProfiles).Assembly);
 

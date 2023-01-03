@@ -10,6 +10,7 @@ public class MessagesRepository : IMessagesRepository
         _dbContext = dbContext;
 
     }
+
     public void AddMessage(Message message)
     {
         _dbContext.Messages.Add(message);
@@ -22,7 +23,8 @@ public class MessagesRepository : IMessagesRepository
 
     public async Task<Message> GetMessageAsync(int id)
     {
-        return await _dbContext.Messages.FindAsync(id);
+        return await _dbContext.Messages.Include(m => m.Sender)
+            .Include(m => m.Recipient).SingleOrDefaultAsync(m => m.Id == id);
     }
 
     // Get all messages that I send/recieve them to/from all users or the recieved messages that I did't read it yet.
@@ -67,7 +69,7 @@ public class MessagesRepository : IMessagesRepository
         {
             foreach (var message in unreadedMessages)
             {
-                message.ReadAt = DateTime.Now;
+                message.ReadAt = DateTime.UtcNow;
             }
             await _dbContext.SaveChangesAsync();
         }
@@ -80,5 +82,30 @@ public class MessagesRepository : IMessagesRepository
     public async Task<bool> SaveAllAsync()
     {
         return await _dbContext.SaveChangesAsync() > 0;
+    }
+
+    //For SignalR
+    public void AddGroup(Group group)
+    {
+        _dbContext.Groups.Add(group);
+    }
+    public async Task<Connection> GetConnection(string connectionId)
+    {
+        return await _dbContext.Connections.FindAsync(connectionId);
+    }
+    public async Task<Group> GetMessageGroup(string groupName)
+    {
+        return await _dbContext.Groups.Include(g => g.Connections).FirstOrDefaultAsync(g => g.Name == groupName);
+    }
+    public async Task<Group> GetGroupForConnection(string connectionId)
+    {
+        return await _dbContext.Groups.Include(g => g.Connections)
+        .Where(g => g.Connections.Any(c => c.ConnectionId == connectionId))
+        .FirstOrDefaultAsync();
+    }
+
+    public void RemoveConnection(Connection connection)
+    {
+        _dbContext.Connections.Remove(connection);
     }
 }

@@ -17,7 +17,7 @@ public class Message
 
     // Actual message properties
     public string Content { get; set; }
-    public DateTime SendAt { get; set; } = DateTime.Now;
+    public DateTime SendAt { get; set; } = DateTime.UtcNow;
     public DateTime? ReadAt { get; set; }  // nullable to be null when the recipient doesn't read it.
 
     // When sender delete the message will be deleted in his view only.

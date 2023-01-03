@@ -24,6 +24,7 @@ global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.AspNetCore.Mvc.Filters;
 global using Microsoft.AspNetCore.Identity;
 global using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+global using Microsoft.AspNetCore.SignalR;
 
 
 
@@ -35,3 +36,4 @@ global using API.Interfaces;
 global using API.Extentions;
 global using API.Middleware;
 global using API.Helpers;
+global using API.SignalR;

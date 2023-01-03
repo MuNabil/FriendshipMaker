@@ -39,12 +39,12 @@
     >
       <img
         src="{{ user.photoUrl || './assets/user.png' }}"
-        alt="{{ user.username }}"
+        alt="{{ user.userName }}"
         class="rounded-circle m-2"
         style="width: 50px; border: 2px solid #fff; display: inline"
       />
       <a class="dropdown-toggle text-light" dropdownToggle
-        >Welcome {{ user.knownAs || user.username | titlecase }}</a
+        >Welcome {{ user.knownAs || user.userName | titlecase }}</a
       >
       <div class="dropdown-menu mt-3" *dropdownMenu>
         <a class="dropdown-item" routerLink="/member/edit">Edit Profile</a>
