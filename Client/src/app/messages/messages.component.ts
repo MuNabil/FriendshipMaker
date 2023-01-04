@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Message } from '../_models/message';
 import { Pagination } from '../_models/pagination';
+import { ConfirmService } from '../_services/confirm.service';
 import { MessagesService } from '../_services/messages.service';
 
 @Component({
@@ -19,7 +20,7 @@ export class MessagesComponent implements OnInit {
   //To overcome the photo switch
   loading = false;
 
-  constructor(private messageService: MessagesService) { }
+  constructor(private messageService: MessagesService, private confirmService: ConfirmService) { }
 
   ngOnInit(): void {
     this.LoadMessages();
@@ -42,8 +43,12 @@ export class MessagesComponent implements OnInit {
   }
 
   DeleteMessage(id: number) {
-    this.messageService.DeleteMessage(id).subscribe(() => {
-      this.messages.splice(this.messages.findIndex(m => m.id === id), 1); // to  remove the message from messages array
+    this.confirmService.Confirm('Confirm Delete Message', 'This action can not be undone').subscribe(result => {
+      if (result) {
+        this.messageService.DeleteMessage(id).subscribe(() => {
+          this.messages.splice(this.messages.findIndex(m => m.id === id), 1); // to  remove the message from messages array
+        })
+      }
     })
   }
 

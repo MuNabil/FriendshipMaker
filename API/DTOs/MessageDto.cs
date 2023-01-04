@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace API.DTOs;
 
 public class MessageDto
@@ -15,4 +17,9 @@ public class MessageDto
     public string Content { get; set; }
     public DateTime SendAt { get; set; }
     public DateTime? ReadAt { get; set; }
+
+    [JsonIgnore] // So I could user them here but when I send them to the client Json will ignore them
+    public bool SenderDeleted { get; set; }
+    [JsonIgnore]
+    public bool RecipientDeleted { get; set; }
 }

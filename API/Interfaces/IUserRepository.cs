@@ -8,5 +8,5 @@ public interface IUserRepository
     Task<IEnumerable<ApplicationUser>> GetUsersAsync();
     Task<PagedList<MemberDto>> GetMembersAsync(UserParams userParams);
     void Update(ApplicationUser user);
-    Task<bool> SaveAllAsync();
+    Task<string> GetUserGender(string username);
 }

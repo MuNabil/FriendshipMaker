@@ -31,21 +31,20 @@ public class MessagesRepository : IMessagesRepository
     public async Task<PagedList<MessageDto>> GetMessagesforUserAsync(MessageParams messageParams)
     {
         // get the messages order by newest
-        var query = _dbContext.Messages.OrderByDescending(m => m.SendAt).AsQueryable();
+        var query = _dbContext.Messages.OrderByDescending(m => m.SendAt)
+            .ProjectTo<MessageDto>(_mapper.ConfigurationProvider).AsQueryable();
 
         query = messageParams.Container switch
         {
-            "Inbox" => query.Where(m => m.Recipient.UserName == messageParams.Username // Get the messages that I recieve it
+            "Inbox" => query.Where(m => m.RecipientUsername == messageParams.Username // Get the messages that I recieve it
                 && !m.RecipientDeleted), // and I don't delete it (as a recipient)
-            "Outbox" => query.Where(m => m.Sender.UserName == messageParams.Username  // Get the messages that I send it
+            "Outbox" => query.Where(m => m.SenderUsername == messageParams.Username  // Get the messages that I send it
                 && !m.SenderDeleted), // and I don't delete it (as a sender)
-            _ => query.Where(m => m.Recipient.UserName == messageParams.Username && m.ReadAt == null //Get the revieved unreaded messages
+            _ => query.Where(m => m.RecipientUsername == messageParams.Username && m.ReadAt == null //Get the revieved unreaded messages
                 && !m.RecipientDeleted) // and I don't delete it (as a recipient)
         };
 
-        var messages = query.ProjectTo<MessageDto>(_mapper.ConfigurationProvider);
-
-        return await PagedList<MessageDto>.CreateAsync(messages, messageParams.PageNumber, messageParams.PageSize);
+        return await PagedList<MessageDto>.CreateAsync(query, messageParams.PageNumber, messageParams.PageSize);
     }
 
 
@@ -63,7 +62,7 @@ public class MessagesRepository : IMessagesRepository
                             .ToListAsync();
 
         // Get Unreaded messages that sent to me
-        var unreadedMessages = messages.Where(m => m.Recipient.UserName == currentUsername && m.ReadAt is null).ToList();
+        var unreadedMessages = messages.Where(m => m.RecipientUsername == currentUsername && m.ReadAt is null).ToList();
         //Mark them as readed
         if (unreadedMessages.Any())
         {
@@ -71,17 +70,9 @@ public class MessagesRepository : IMessagesRepository
             {
                 message.ReadAt = DateTime.UtcNow;
             }
-            await _dbContext.SaveChangesAsync();
         }
 
-        // return the chat
         return _mapper.Map<IEnumerable<MessageDto>>(messages);
-
-    }
-
-    public async Task<bool> SaveAllAsync()
-    {
-        return await _dbContext.SaveChangesAsync() > 0;
     }
 
     //For SignalR

@@ -6,15 +6,11 @@ public static class ApplicationServiceExtentions
     {
         Services.AddScoped<ITokenService, TokenService>();
 
-        Services.AddScoped<IUserRepository, UserRepository>();
+        Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         Services.Configure<CloudinarySettings>(configuration.GetSection("CloudinarySettings"));
 
         Services.AddScoped<IPhotoService, PhotoService>();
-
-        Services.AddScoped<ILikesRepository, LikesRepository>();
-
-        Services.AddScoped<IMessagesRepository, MessagesRepository>();
 
         Services.AddScoped<LogUserActivity>();
 

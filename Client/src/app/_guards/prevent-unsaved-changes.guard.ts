@@ -1,14 +1,20 @@
 import { Injectable } from '@angular/core';
 import { CanDeactivate } from '@angular/router';
+import { Observable } from 'rxjs';
 import { MemberEditComponent } from '../members/member-edit/member-edit.component';
+import { ConfirmService } from '../_services/confirm.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PreventUnsavedChangesGuard implements CanDeactivate<unknown> {
-  canDeactivate(component: MemberEditComponent): boolean {
+
+  constructor(private confirmService: ConfirmService) { }
+
+  canDeactivate(component: MemberEditComponent): Observable<boolean> | boolean {
     if (component.editForm.dirty) {
-      return confirm('You have unsaved changes will be lost. Are you sure you want to leave?');
+      // I don't need to subscripe here the roue guard will automatically subscribe
+      return this.confirmService.Confirm();
     }
     return true;
   }

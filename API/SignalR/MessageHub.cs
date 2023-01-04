@@ -3,17 +3,15 @@ namespace API.SignalR;
 public class MessageHub : Hub
 {
     private readonly IMapper _mapper;
-    private readonly IMessagesRepository _messagesRepository;
-    private readonly IUserRepository _userRepository;
     private readonly IHubContext<PresenceHub> _presenceHub;
     private readonly PresenceTracker _tracker;
-    public MessageHub(IMessagesRepository messagesRepository, IMapper mapper,
-         IUserRepository userRepository, IHubContext<PresenceHub> presenceHub, PresenceTracker tracker)
+    private readonly IUnitOfWork _unitOfWork;
+    public MessageHub(IUnitOfWork unitOfWork, IMapper mapper,
+         IHubContext<PresenceHub> presenceHub, PresenceTracker tracker)
     {
+        _unitOfWork = unitOfWork;
         _tracker = tracker;
         _presenceHub = presenceHub;
-        _userRepository = userRepository;
-        _messagesRepository = messagesRepository;
         _mapper = mapper;
 
     }
@@ -38,7 +36,9 @@ public class MessageHub : Hub
         await Clients.Group(groupName).SendAsync("UpdatedGroup", group);
 
         // Get the chat between these two users
-        var messages = await _messagesRepository.GetMessagesThreadAsync(Context.User.GetUsername(), otherUser);
+        var messages = await _unitOfWork.MessageRepository.GetMessagesThreadAsync(Context.User.GetUsername(), otherUser);
+        // If there are unread messages will mard them as read at the repository aabove and here I will save it permanently at DB
+        if (_unitOfWork.HasChanges()) await _unitOfWork.Complete();
 
         await Clients.Caller.SendAsync("ReceiveMessageThread", messages);
     }
@@ -61,8 +61,8 @@ public class MessageHub : Hub
         if (username == createMessageDto.RecipientUsername.ToLower())
             throw new HubException("You can't messageing yourself");
 
-        var sender = await _userRepository.GetUserByUsernameAsync(username);
-        var recipient = await _userRepository.GetUserByUsernameAsync(createMessageDto.RecipientUsername);
+        var sender = await _unitOfWork.UserRepository.GetUserByUsernameAsync(username);
+        var recipient = await _unitOfWork.UserRepository.GetUserByUsernameAsync(createMessageDto.RecipientUsername);
         if (recipient is null)
             throw new HubException($"User with username '{createMessageDto.RecipientUsername}' not found");
 
@@ -78,7 +78,7 @@ public class MessageHub : Hub
 
         // To get the group name that the sender and the recipient belong to
         var groupName = GetGroupName(sender.UserName, recipient.UserName);
-        var group = await _messagesRepository.GetMessageGroup(groupName);
+        var group = await _unitOfWork.MessageRepository.GetMessageGroup(groupName);
 
         // IF the recipient is online and he is also in the same group(chat) then we will mark it as readed
         if (group.Connections.Any(c => c.Username == recipient.UserName))
@@ -98,9 +98,9 @@ public class MessageHub : Hub
 
             }
         }
-        _messagesRepository.AddMessage(newMessage);
+        _unitOfWork.MessageRepository.AddMessage(newMessage);
 
-        if (await _messagesRepository.SaveAllAsync())
+        if (await _unitOfWork.Complete())
         {
             await Clients.Group(groupName).SendAsync("NewMessage", _mapper.Map<MessageDto>(newMessage));
         }
@@ -110,7 +110,7 @@ public class MessageHub : Hub
     // I will return a Group from both 2-methods because I wanna see which user is in the group(online) so I send the messages to him
     private async Task<Group> AddToGroup(string groupName)
     {
-        var group = await _messagesRepository.GetMessageGroup(groupName);
+        var group = await _unitOfWork.MessageRepository.GetMessageGroup(groupName);
         // To get a new connection from Connection entity that I created
         // so when a user is connects to this hub will given a new connectionId unless the're reconnecting
         var connection = new Connection(Context.ConnectionId, Context.User.GetUsername());
@@ -119,24 +119,24 @@ public class MessageHub : Hub
         if (group is null)
         {
             group = new Group(groupName);
-            _messagesRepository.AddGroup(group);
+            _unitOfWork.MessageRepository.AddGroup(group);
         }
         // To add this new connection to its connection collection<Connection>....
         group.Connections.Add(connection);
 
-        if (await _messagesRepository.SaveAllAsync()) return group;
+        if (await _unitOfWork.Complete()) return group;
 
         throw new HubException("Faild to add to group");
     }
     private async Task<Group> RemoveFromMessageGroup()
     {
         // To get the group that containing this connection
-        var group = await _messagesRepository.GetGroupForConnection(Context.ConnectionId);
+        var group = await _unitOfWork.MessageRepository.GetGroupForConnection(Context.ConnectionId);
         // To get the connection from the group above becaue I Include it at the query instead of getting it from the repository(dataabase)
         var connection = group.Connections.FirstOrDefault(c => c.ConnectionId == Context.ConnectionId);
-        _messagesRepository.RemoveConnection(connection);
+        _unitOfWork.MessageRepository.RemoveConnection(connection);
 
-        if (await _messagesRepository.SaveAllAsync()) return group;
+        if (await _unitOfWork.Complete()) return group;
 
         throw new HubException("Faild to remove from group");
     }

@@ -17,11 +17,11 @@ public class LogUserActivity : IAsyncActionFilter
         var userId = resultContext.HttpContext.User.GetUserId();
 
         // To get access to the repository (with service located pattern) without inject it in ctor
-        var repository = resultContext.HttpContext.RequestServices.GetService<IUserRepository>();
+        var unitOfWork = resultContext.HttpContext.RequestServices.GetService<IUnitOfWork>();
 
         // Get the user to change the lastActive property in it
-        var user = await repository.GetUserByIdAsync(userId);
-        user.LastActive = DateTime.Now;
-        await repository.SaveAllAsync();
+        var user = await unitOfWork.UserRepository.GetUserByIdAsync(userId);
+        user.LastActive = DateTime.UtcNow;
+        await unitOfWork.Complete();
     }
 }

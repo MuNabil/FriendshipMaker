@@ -68,13 +68,13 @@ public class UserRepository : IUserRepository
         return await _dbContext.Users.Include(p => p.Photos).ToListAsync();
     }
 
-    public async Task<bool> SaveAllAsync()
-    {
-        return await _dbContext.SaveChangesAsync() > 0;
-    }
-
     public void Update(ApplicationUser user)
     {
         _dbContext.Entry(user).State = EntityState.Modified;
+    }
+
+    public async Task<string> GetUserGender(string username)
+    {
+        return await _dbContext.Users.Where(u => u.UserName == username).Select(u => u.Gender).FirstOrDefaultAsync();
     }
 }
