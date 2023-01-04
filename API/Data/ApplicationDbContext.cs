@@ -10,6 +10,8 @@ namespace API.Data
         public ApplicationDbContext(DbContextOptions options) : base(options)
         {
         }
+
+        public DbSet<Photo> Photos { get; set; }
         public DbSet<UserLike> Likes { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<Group> Groups { get; set; }
@@ -70,6 +72,9 @@ namespace API.Data
               .OnDelete(DeleteBehavior.Restrict);
 
             #endregion
+
+
+            builder.Entity<Photo>().HasQueryFilter(p => p.IsApproved);
 
 
             // To store all dates in db as Utc format

@@ -40,7 +40,7 @@ public class UsersController : BaseApiController
     [HttpGet("{username}", Name = "GetUser")]
     public async Task<ActionResult<MemberDto>> GetUser(string username)
     {
-        return Ok(await _unitOfWork.UserRepository.GetMemberByNameAsync(username));
+        return Ok(await _unitOfWork.UserRepository.GetMemberByNameAsync(username, username == User.GetUsername()));
     }
 
     [HttpPut]
@@ -72,8 +72,6 @@ public class UsersController : BaseApiController
             Url = result.SecureUrl.AbsoluteUri,
             PublicId = result.PublicId
         };
-
-        if (user.Photos.Count == 0) photo.IsMain = true;
 
         user.Photos.Add(photo);
 

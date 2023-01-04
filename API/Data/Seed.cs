@@ -28,6 +28,8 @@ public class Seed
         // Because you add them into the role then you must seed the role first
         foreach (var user in users)
         {
+            user.Photos.First().IsApproved = true;
+
             user.UserName = user.UserName.Trim().ToLower();
 
             await userManager.CreateAsync(user, "Pa$$w0rd");

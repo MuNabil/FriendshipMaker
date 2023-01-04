@@ -17,6 +17,8 @@ public class UnitOfWork : IUnitOfWork
 
     public ILikesRepository LikesRepository => new LikesRepository(_dbContext);
 
+    public IPhotoRepository PhotoRepository => new PhotoRepository(_dbContext);
+
     public async Task<bool> Complete()
     {
         return await _dbContext.SaveChangesAsync() > 0;

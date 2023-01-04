@@ -3,8 +3,12 @@ namespace API.Controllers;
 public class AdminController : BaseApiController
 {
     private readonly UserManager<ApplicationUser> _userManager;
-    public AdminController(UserManager<ApplicationUser> userManager)
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IPhotoService _photoService;
+    public AdminController(UserManager<ApplicationUser> userManager, IUnitOfWork unitOfWork, IPhotoService photoService)
     {
+        _photoService = photoService;
+        _unitOfWork = unitOfWork;
         _userManager = userManager;
     }
 
@@ -50,8 +54,48 @@ public class AdminController : BaseApiController
 
     [Authorize(Policy = "ModeratePhotoRole")]
     [HttpGet("photos-to-moderate")]
-    public ActionResult GetPhotosForModeration()
+    public async Task<ActionResult> GetPhotosForModeration()
     {
-        return Ok("Admins and moderators can access this endpoint");
+        return Ok(await _unitOfWork.PhotoRepository.GetUnapprovedPhotos());
+    }
+
+    [Authorize(Policy = "ModeratePhotoRole")]
+    [HttpPost("approve-photo/{photoId}")]
+    public async Task<ActionResult> ApprovePhoto(int photoId)
+    {
+        var photo = await _unitOfWork.PhotoRepository.GetPhotoById(photoId);
+        if (photo is null) return NotFound();
+
+        photo.IsApproved = true;
+
+        var user = await _unitOfWork.UserRepository.GetUserByPhotoId(photoId);
+        if (!user.Photos.Any(p => p.IsMain)) photo.IsMain = true;
+
+        if (await _unitOfWork.Complete()) return Ok();
+
+        return BadRequest("Problem occured when approving the photo with ID = " + photoId);
+    }
+
+    [Authorize(Policy = "ModeratePhotoRole")]
+    [HttpPost("reject-photo/{photoId}")]
+    public async Task<ActionResult> RejectPhoto(int photoId)
+    {
+        var photo = await _unitOfWork.PhotoRepository.GetPhotoById(photoId);
+        if (photo is null) return NotFound();
+
+        if (photo.PublicId is not null)
+        {
+            var result = await _photoService.DeletePhotoAsync(photo.PublicId);
+
+            if (result.Result == "ok") _unitOfWork.PhotoRepository.RemovePhoto(photo);
+        }
+        else
+        {
+            _unitOfWork.PhotoRepository.RemovePhoto(photo);
+        }
+
+        if (await _unitOfWork.Complete()) return Ok();
+
+        return BadRequest("Problem occured when deleting the photo");
     }
 }
