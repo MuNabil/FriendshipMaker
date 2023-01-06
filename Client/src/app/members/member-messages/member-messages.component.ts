@@ -17,15 +17,18 @@ export class MemberMessagesComponent implements OnInit {
   // To reset/clean the message input after sending a message
   @ViewChild('messageForm') messageForm: NgForm;
 
+  loading = false;
+
   constructor(public messageService: MessagesService) { }
 
   ngOnInit(): void {
   }
 
   SendMessage() {
+    this.loading = true;
     this.messageService.SendMessage(this.recipientUsername, this.messageContent).then(() => {
       this.messageForm.reset();
-    })
+    }).finally(() => this.loading = false);
   }
 
 }

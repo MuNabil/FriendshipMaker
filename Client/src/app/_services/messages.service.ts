@@ -7,6 +7,7 @@ import { environment } from 'src/environments/environment';
 import { Group } from '../_models/group';
 import { Message } from '../_models/message';
 import { User } from '../_models/user';
+import { BusyService } from './busy.service';
 import { GetPaginatedResult, GetPaginationHeaders } from './paginationHelper';
 
 @Injectable({
@@ -21,10 +22,11 @@ export class MessagesService {
   private messageThreadSource = new BehaviorSubject<Message[]>([]);
   messageThread$ = this.messageThreadSource.asObservable();
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private busyService: BusyService) { }
 
   // For SignalR
   CreateHubConnection(user: User, otherUsername: string) {
+    this.busyService.Busy();
     // Create the hub connection
     this.hubConnection = new HubConnectionBuilder()
       .withUrl(this.hubUrl + 'message?user=' + otherUsername, {
@@ -36,7 +38,8 @@ export class MessagesService {
       .build();
 
     // Start the hub connection
-    this.hubConnection.start().catch(error => console.log(error));
+    this.hubConnection.start().catch(error => console.log(error))
+      .finally(() => this.busyService.Idle())
 
     // to listen to the event and take the messages from it
     this.hubConnection.on('ReceiveMessageThread', messages => {
@@ -45,8 +48,6 @@ export class MessagesService {
 
     // To listen to the event that send the new message that the user send it to update the chat to be live
     this.hubConnection.on('NewMessage', message => {
-      // To upate the array that in the BehaviorSubject because you can't mutating its state
-      // we will take the array add the new message to it send it in the next() of the subject again
       this.messageThread$.pipe(take(1)).subscribe(messages => {
         this.messageThreadSource.next([...messages, message]); // this will create a new array adding the new message at the end of it
       })
@@ -66,7 +67,8 @@ export class MessagesService {
 
   }
   StopHubConnection() {
-    if (this.hubConnection) { // if there is a hub connection -> stop it
+    if (this.hubConnection) {
+      this.messageThreadSource.next([]);
       this.hubConnection.stop();
     }
   }
